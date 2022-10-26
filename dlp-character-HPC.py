@@ -162,7 +162,7 @@ import MDAnalysis.transformations as trans
 trunc_distance = 4.0#irdf.bins[truncation] 
 
 # Density profile arrays
-delta = 1
+delta = 0.1
 maxd = u.dimensions[0]*2
 nbins = np.int(maxd/delta)
 rad_dist_calc = np.zeros(nbins)
@@ -289,7 +289,7 @@ for ts in u.trajectory[0:-1:100]:
     
     for i in range(0,wateroxygen.n_atoms):        
         v = wateroxygen.positions[i] - com
-        v = com + minimum_image(v,cell)
+        v = minimum_image(v,cell)
         
         d = np.sqrt(np.dot(v,v))/delta
         rad_dist_wats[d.astype(int)] +=1
@@ -376,6 +376,7 @@ plt.savefig('density-profiles-droplet.png',dpi=100)
 np.savetxt('rad_dens_calc.dat',np.column_stack([binp,rad_calc]))
 np.savetxt('rad_dens_carb.dat',np.column_stack([binp,rad_carb]))
 np.savetxt('rad_dens_ions.dat',np.column_stack([binp,rad_ions]))
+np.savetxt('rad_dens_wats.dat',np.column_stack([binp,rad_wats]))
 watperfu = np.nan_to_num(rad_wats/rad_ions, nan=0, posinf=0, neginf=0)
 np.savetxt('rad_dens_watperfu.dat',np.column_stack([binp,watperfu]))
 
@@ -551,16 +552,19 @@ print(np.mean(dchg),np.std(dchg))
 
 
 print("Mean Ca, C and Ow concentration in droplet core")
-print(np.mean(rad_calc[binp<np.mean(drgy)*10]),np.std(rad_calc[binp<np.mean(drgy)*10]))
-print(np.mean(rad_carb[binp<np.mean(drgy)*10]),np.std(rad_carb[binp<np.mean(drgy)*10]))
-print(np.mean(rad_wats[binp<np.mean(drgy)*10]),np.std(rad_wats[binp<np.mean(drgy)*10]))
+minb = 7.5
+maxb = np.mean(drgy)*10
+print("Bounds:",minb,maxb)
+print(np.mean(rad_calc[np.logical_and(binp>minb, binp<maxb)]),np.std(rad_calc[np.logical_and(binp>minb, binp<maxb)]))
+print(np.mean(rad_carb[np.logical_and(binp>minb, binp<maxb)]),np.std(rad_carb[np.logical_and(binp>minb, binp<maxb)]))
+print(np.mean(rad_wats[np.logical_and(binp>minb, binp<maxb)]),np.std(rad_wats[np.logical_and(binp>minb, binp<maxb)]))
 
 
 # In[24]:
 
 
 print("Mean water per fu")
-print(np.mean(watperfu[binp<np.mean(drgy)*10]),np.std(watperfu[binp<np.mean(drgy)*10]))
+print(np.mean(watperfu[np.logical_and(binp>minb, binp<maxb)]),np.std(watperfu[np.logical_and(binp>minb, binp<maxb)]))
 
 
 # In[25]:
